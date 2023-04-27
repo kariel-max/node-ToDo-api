@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
+import { unlink } from "fs/promises";
 import { Phrase } from '../models/Phrase';
-import sequelize from "sequelize";
 import { Sequelize } from 'sequelize';
+import sharp from "sharp";
 
 export const ping = (req: Request, res: Response) => {
     res.json({pong: true})
@@ -80,4 +81,28 @@ export const aletoriaPhrases = async ( req: Request, res: Response) => {
     res.status(404);
     res.json({erro: 'Frase não encontrada!'});
    }
+}
+
+export const uploadFile = async (req: Request, res: Response) => {
+    // const files =  req.files as {[fieldname: string]: Express.Multer.File[]}
+    // console.log("AVATAR", files.avatar);
+    // console.log("GALLERY", files.gallery);
+
+    
+
+    if ( req.file) {
+
+        let filename = `${ req.file.filename}.jpg`
+
+        await sharp(req.file.path).resize(500, 250).toFormat('jpeg').toFile(`./public/midia/${filename}`)
+
+        await unlink(req.file.path);
+
+    res.json({image: `${filename}`})
+    } else { 
+        res.status(400);
+        res.json({ error: 'Arquivo invalido!'});
+    }
+
+    res.json({})
 }
